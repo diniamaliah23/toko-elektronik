@@ -61,7 +61,7 @@ export async function GET(request) {
       harga: parseFloat(p.price),
       stok: p.stock,
       tanggal: p.updated_at ? p.updated_at.toISOString().split('T')[0] : "",
-      gambar: p.image ? `/api${p.image}` : "/api/images/default.jpg"
+      gambar: p.image ? (p.image.startsWith('/api') ? p.image : `/api${p.image}`) : "/api/images/default.jpg"
     }));
 
     // Filter by tanggal jika ada
