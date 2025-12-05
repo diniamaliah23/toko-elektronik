@@ -113,13 +113,23 @@ export async function POST(request) {
     });
 
     if (produk) {
-      await prisma.produk.update({
-        where: { produk_id: produk.produk_id },
-        data: {
-          stock: produk.stock + qtyNum,
-          updated_at: new Date()
-        }
-      });
+      // Cek apakah produk baru dibuat (dalam 10 detik terakhir)
+      // Jika ya, skip update stok karena stok sudah di-set saat create produk
+      const now = new Date();
+      const createdAt = new Date(produk.created_at);
+      const diffSeconds = (now - createdAt) / 1000;
+      
+      if (diffSeconds > 10) {
+        // Produk sudah ada sebelumnya, update stok
+        await prisma.produk.update({
+          where: { produk_id: produk.produk_id },
+          data: {
+            stock: produk.stock + qtyNum,
+            updated_at: new Date()
+          }
+        });
+      }
+      // Jika produk baru (< 10 detik), skip update karena stok sudah benar
     }
 
     return Response.json(
